@@ -4,10 +4,6 @@
 add_newline = true
 
 # Change the default prompt format
-#format = """\
-#[╭╴](bold green)$env_var\
-#$all[╰─](bold green)$character\
-#"""
 format = """\
 [╭╴](bold green)$os$username$hostname$directory$git_branch$git_status
 $battery
@@ -102,8 +98,13 @@ deleted = '[󰍶 deleted=${count}](red) '
 [terraform]
 format = "via [ terraform $version]($style) 壟 [$workspace]($style) "
 
+[kubernetes]
+format = 'on [ $context\($namespace\)](bold purple) '
+disabled = false
+
 [vagrant]
 format = "via [ vagrant $version]($style) "
+disabled = true
 
 [docker_context]
 format = "via [ $context](bold blue) "
@@ -112,8 +113,14 @@ format = "via [ $context](bold blue) "
 format = "via [ $version](bold purple) "
 
 [python]
-symbol = " "
-python_binary = "python3"
+symbol = "🐍 "
+python_binary = 'python3'
+format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+version_format = 'v${raw}'
+detect_extensions =	['py', 'ipynb']
+style =	'yellow bold'
+detect_files =	['.py, .python-version', 'Pipfile', '__init__.py', 'pyproject.toml', 'requirements.txt', 'setup.py', 'tox.ini', 'pixi.toml']
+disabled = false
 
 [nodejs]
 format = "via [ $version](bold green) "
@@ -121,10 +128,4 @@ disabled = true
 
 [ruby]
 format = "via [ $version]($style) "
-
-[kubernetes]
-format = 'on [ $context\($namespace\)](bold purple) '
-disabled = false
-[kubernetes.context_aliases]
-"clcreative-k8s-staging" = "cl-k8s-staging"
-"clcreative-k8s-production" = "cl-k8s-prod"
+disabled = true
