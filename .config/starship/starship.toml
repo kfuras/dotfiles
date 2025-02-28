@@ -1,0 +1,129 @@
+# ~/.config/starship.toml
+
+# Inserts a blank line between shell prompts
+add_newline = true
+
+# Change the default prompt format
+#format = """\
+#[╭╴](bold green)$env_var\
+#$all[╰─](bold green)$character\
+#"""
+format = """\
+[╭╴](bold green)$os$username$hostname$directory$git_branch$git_status
+$battery
+[╰─](bold green)$character\
+"""
+
+[os]
+format = '[$symbol](bold white) '   
+disabled = false
+
+[os.symbols]
+Windows = ' '
+Arch = '󰣇'
+Ubuntu = ''
+Macos = '󰀵'
+
+# Shows the username
+[username]
+style_user = 'white bold'
+style_root = 'black bold'
+format = '[$user]($style) '
+disabled = false
+show_always = true
+
+# Shows the hostname
+[hostname]
+ssh_only = false
+format = 'on [$hostname](bold yellow) '
+disabled = false
+
+# Change the default prompt characters
+[character]
+success_symbol = "[](bold green)"
+error_symbol = "[](bold green)"
+
+# Shows an icon that should be included by zshrc script based on the distribution or os
+[env_var.STARSHIP_DISTRO]
+format = '[$env_value](bold white)'  # removed space between distro and rest for pwsh
+variable = "STARSHIP_DISTRO"
+disabled = false
+
+[battery]
+full_symbol = '󰁹 '
+charging_symbol = '󰂄 '
+discharging_symbol = '󰂃 '
+
+[[battery.display]] # 'bold yellow' style and discharging_symbol symbol when capacity is between 50% and 100%
+threshold = 100
+style = 'bold green'
+
+[[battery.display]] # 'bold yellow' style and discharging_symbol when capacity is between 15% and 50%
+threshold = 50
+style = 'bold yellow'
+
+[[battery.display]] # 'bold red' style and discharging_symbol when capacity is between 0% and 15%
+threshold = 15
+style = 'bold red'
+
+[directory]
+truncation_length = 128
+truncation_symbol = "…/"
+home_symbol = "󰋜"
+use_os_path_sep = true
+use_logical_path = true
+read_only_style = "197"
+read_only = "  "
+format = "at [$path]($style)[$read_only]($read_only_style) "
+
+[git_branch]
+symbol = " "
+format = "on [$symbol$branch]($style) "
+truncation_length = 128
+truncation_symbol = "…/"
+style = "bold green"
+
+[git_status]
+format = '[\($all_status$ahead_behind\)]($style) '
+style = "bold green"
+conflicted = "🏳"
+up_to_date = " "
+untracked = " "
+ahead = "⇡${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+behind = "⇣${count}"
+stashed = " "
+modified = " "
+staged = '[++\($count\)](green)'
+renamed = "襁 "
+deleted = " "
+
+[terraform]
+format = "via [ terraform $version]($style) 壟 [$workspace]($style) "
+
+[vagrant]
+format = "via [ vagrant $version]($style) "
+
+[docker_context]
+format = "via [ $context](bold blue) "
+
+[helm]
+format = "via [ $version](bold purple) "
+
+[python]
+symbol = " "
+python_binary = "python3"
+
+[nodejs]
+format = "via [ $version](bold green) "
+disabled = true
+
+[ruby]
+format = "via [ $version]($style) "
+
+[kubernetes]
+format = 'on [ $context\($namespace\)](bold purple) '
+disabled = false
+[kubernetes.context_aliases]
+"clcreative-k8s-staging" = "cl-k8s-staging"
+"clcreative-k8s-production" = "cl-k8s-prod"
