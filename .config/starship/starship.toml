@@ -67,36 +67,37 @@ threshold = 15
 style = 'bold red'
 
 [directory]
-truncation_length = 128
+truncation_length = 0
 truncation_symbol = "…/"
-home_symbol = "󰋜"
+home_symbol = "~"
 use_os_path_sep = true
 use_logical_path = true
 read_only_style = "197"
 read_only = "  "
 format = "at [$path]($style)[$read_only]($read_only_style) "
+truncate_to_repo = false
 
 [git_branch]
-symbol = " "
+symbol = " "
 format = "on [$symbol$branch]($style) "
-truncation_length = 128
+#truncation_length = 128
 truncation_symbol = "…/"
 style = "bold green"
 
 [git_status]
-format = '[\($all_status$ahead_behind\)]($style) '
-style = "bold green"
-conflicted = "🏳"
-up_to_date = " "
-untracked = " "
-ahead = "⇡${count}"
-diverged = "⇕⇡${ahead_count}⇣${behind_count}"
-behind = "⇣${count}"
-stashed = " "
-modified = " "
-staged = '[++\($count\)](green)'
-renamed = "襁 "
-deleted = " "
+format = '([ \( $all_status$ahead_behind\)]($style) )'
+style = 'bold green'
+conflicted = '[ confliced=${count}](red) '
+up_to_date = '[󰘽 up-to-date](green) '
+untracked = '[󰋗 untracked=${count}](red) '
+ahead = ' ahead=${count}'
+diverged = ' ahead=${ahead_count}  behind=${behind_count}'
+behind = ' behind=${count}'
+stashed = '[ stashed=${count}](green) '
+modified = '[󰛿 modified=${count}](yellow) '
+staged = '[󰐗 staged=${count}](green) '
+renamed = '[󱍸 renamed=${count}](yellow) '
+deleted = '[󰍶 deleted=${count}](red) '
 
 [terraform]
 format = "via [ terraform $version]($style) 壟 [$workspace]($style) "
