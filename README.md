@@ -61,23 +61,6 @@ cd ~/dotfiles
 - [`zsh-syntax-highlighting`](https://github.com/zsh-users/zsh-syntax-highlighting)
 - [`Starship`](https://starship.rs) for cross-shell theming
 
-## Repository Structure
-
-```
-dotfiles/
-├── .bashrc
-├── .bash_aliases
-├── .zshrc
-├── .config/
-│   └── starship.toml
-├── zsh_plugins/
-├── bootstrap.sh
-└── bootstrap.ps1
-├── LICENSE
-└── README.md
-
-```
-
 ## Keeping Dotfiles in Sync
 
 To update configurations across systems:
