@@ -1,58 +1,75 @@
-# Set paths
-$dotfilesDir = "$HOME\code\dotfiles"
-$labScriptsDir = "$HOME\code\lab\powershell"
+<#
+.SYNOPSIS
+    Bootstraps the Windows shell environment by:
+    - Setting up PowerShell profile
+    - Installing Starship via winget
+    - Downloading Starship config
+    - Creating devcontainer aliases and helper script
+#>
+
+$dotfilesDir = "$HOME\dotfiles"
+$binDir = "$HOME\bin"
 $profilePath = $PROFILE
-$starshipToml = "$HOME\.config\starship.toml"
-$devaliases = "$HOME\.devaliases.ps1"
-$devHelperScript = "$HOME\bin\add-devcontainer.ps1"
+$devaliasesPath = "$HOME\.devaliases.ps1"
 
 # Ensure dotfiles exists
 if (-not (Test-Path $dotfilesDir)) {
-    git clone git@github.com:kfuras/dotfiles.git $dotfilesDir
+    git clone "git@github.com:kfuras/dotfiles.git" $dotfilesDir
 }
 
-# Ensure profile file exists
+# Create PowerShell profile if it doesn't exist
 if (-not (Test-Path $profilePath)) {
     New-Item -ItemType File -Path $profilePath -Force
 }
 
-# Install starship if missing
+# Ensure Starship is installed
 if (-not (Get-Command starship -ErrorAction SilentlyContinue)) {
-    Write-Host "Installing Starship with winget..."
-    winget install --id Starship.Starship -e --source winget
+    Write-Output "Installing Starship via winget..."
+    winget install --id Starship.Starship -e --accept-package-agreements --accept-source-agreements
 }
 
-# Copy Starship config
-$sourceToml = "$dotfilesDir\.config\starship.toml"
-if (Test-Path $sourceToml) {
-    New-Item -ItemType Directory -Force -Path (Split-Path $starshipToml)
-    Copy-Item -Path $sourceToml -Destination $starshipToml -Force
-    Write-Host "✅ Starship config copied"
-}
+# Link or copy Starship config
+$starshipSource = "$dotfilesDir\.config\starship\starship.toml"
+$starshipTarget = "$HOME\.config\starship\starship.toml"
+New-Item -ItemType Directory -Path (Split-Path $starshipTarget) -Force | Out-Null
+Copy-Item -Path $starshipSource -Destination $starshipTarget -Force
 
-# Add Starship init to profile if not already added
+# Ensure profile sources Starship
 $starshipInit = 'Invoke-Expression (&starship init powershell)'
-if (-not (Get-Content $profilePath | Select-String -Pattern $starshipInit)) {
+if (-not (Get-Content $profilePath | Select-String -Pattern [regex]::Escape($starshipInit))) {
     Add-Content -Path $profilePath -Value "`n$starshipInit"
-    Write-Host "✅ Starship init added to profile"
+    Write-Output "✅ Added Starship init to profile"
 }
 
-# Link .devaliases.ps1
-$sourceDevaliases = "$dotfilesDir\.devaliases.ps1"
-if (Test-Path $sourceDevaliases) {
-    if (-not (Get-Content $profilePath | Select-String -Pattern "\.devaliases\.ps1")) {
-        Add-Content -Path $profilePath -Value "`n. '$devaliases'"
-        Write-Host "✅ Added .devaliases.ps1 sourcing to profile"
+# --- Write .devaliases.ps1 ---
+@'
+# ~/.devaliases.ps1
+
+function devsetup {
+    param([string]$type)
+    & "$HOME\bin\add-devcontainer.ps1" --type=$type
+}
+
+function devconnect {
+    param([string]$name)
+    $container = docker ps --filter "name=$name" --format "{{.Names}}" | Select-Object -First 1
+    if (-not $container) {
+        Write-Host "❌ No container found matching: $name"
+        return
     }
-    Copy-Item -Path $sourceDevaliases -Destination $devaliases -Force
+    docker exec -it $container powershell
+}
+'@ | Set-Content $devaliasesPath
+
+# Source aliases in profile
+$devaliasesSource = ". $devaliasesPath"
+if (-not (Get-Content $profilePath | Select-String -Pattern [regex]::Escape($devaliasesSource))) {
+    Add-Content -Path $profilePath -Value "`n$devaliasesSource"
+    Write-Output "✅ Added dev aliases to profile"
 }
 
-# Add add-devcontainer.ps1 helper
-New-Item -ItemType Directory -Force -Path "$HOME\bin"
-$addDevSource = "$labScriptsDir\add-devcontainer.ps1"
-if (Test-Path $addDevSource) {
-    Copy-Item -Path $addDevSource -Destination $devHelperScript -Force
-    Write-Host "✅ Linked add-devcontainer.ps1 to ~/bin"
-}
+# Create bin directory and download helper script
+New-Item -ItemType Directory -Path $binDir -Force | Out-Null
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/kfuras/lab/main/powershell/add-devcontainer.ps1" -OutFile "$binDir\add-devcontainer.ps1"
 
-Write-Host "`n🔁 Reload your PowerShell session or run: `n`n    . $PROFILE`n"
+Write-Output "✅ Setup complete. Restart your terminal to apply changes."
