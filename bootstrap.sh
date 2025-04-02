@@ -16,14 +16,16 @@ mkdir -p ~/.config
 ln -sf "$DOTFILES_DIR/.config/starship/starship.toml" ~/.config/starship.toml
 echo "✅ Linked Starship config"
 
-# --- Create ~/.devaliases with functions ---
-cat <<'EOF' > "$DEVALIASES"
+# --- Write ~/.devaliases ---
+cat <<'EOF' > "$HOME/.devaliases"
 # ~/.devaliases
 
+# Create devcontainer by project type
 devsetup() {
   "$HOME/bin/add-devcontainer" --type="$1"
 }
 
+# Connect to container by name
 devconnect() {
   container=$(docker ps --filter "name=$1" --format "{{.Names}}" | head -n 1)
   if [ -z "$container" ]; then
@@ -33,6 +35,7 @@ devconnect() {
   docker exec -it "$container" bash
 }
 
+# Use Zsh inside container
 devshell() {
   container=$(docker ps --filter "name=$1" --format "{{.Names}}" | head -n 1)
   if [ -z "$container" ]; then
@@ -40,6 +43,11 @@ devshell() {
     return 1
   fi
   docker exec -it "$container" zsh
+}
+
+# Build/launch dev container in current folder
+devbuild() {
+  devcontainer up --workspace-folder "$PWD"
 }
 EOF
 echo "✅ Created ~/.devaliases with devcontainer helpers"
