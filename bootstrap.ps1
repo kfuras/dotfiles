@@ -30,7 +30,7 @@ if (-not (Get-Command starship -ErrorAction SilentlyContinue)) {
 
 # Link or copy Starship config
 $starshipSource = "$dotfilesDir\.config\starship\starship.toml"
-$starshipTarget = "$HOME\.config\starship\starship.toml"
+$starshipTarget = "$HOME\.config\starship.toml"
 New-Item -ItemType Directory -Path (Split-Path $starshipTarget) -Force | Out-Null
 Copy-Item -Path $starshipSource -Destination $starshipTarget -Force
 
