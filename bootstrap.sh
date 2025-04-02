@@ -3,25 +3,25 @@
 set -e
 
 DOTFILES_DIR="$HOME/code/dotfiles"
-ZSHRC="$HOME/.zshrc"
-BASHRC="$HOME/.bashrc"
-DEVALIASES="$HOME/.devaliases"
 BIN_DIR="$HOME/bin"
+DEVALIASES="$HOME/.devaliases"
 
-# --- Write ~/.devaliases ---
+echo "🔧 Setting up dotfiles environment..."
+
+# --- Ensure ~/bin exists ---
+mkdir -p "$BIN_DIR"
+
+# --- Link Starship config ---
+mkdir -p ~/.config
+ln -sf "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml
+echo "✅ Linked Starship config"
+
+# --- Create ~/.devaliases with functions ---
 cat <<'EOF' > "$DEVALIASES"
 # ~/.devaliases
 
 devsetup() {
   "$HOME/bin/add-devcontainer" --type="$1"
-}
-
-devbuild() {
-  if ! command -v devcontainer &> /dev/null; then
-    echo "❌ devcontainer CLI not found. Install with: brew install devcontainer"
-    return 1
-  fi
-  devcontainer up --workspace-folder "$PWD"
 }
 
 devconnect() {
@@ -42,43 +42,31 @@ devshell() {
   docker exec -it "$container" zsh
 }
 EOF
-
 echo "✅ Created ~/.devaliases with devcontainer helpers"
 
-# --- Append dotfiles config to shell ---
-if [[ "$SHELL" =~ "zsh" ]]; then
-  touch "$ZSHRC"
-  if ! grep -q "# >>> dotfiles <<<" "$ZSHRC"; then
-    echo -e "\n# >>> dotfiles <<<\nsource \"$DOTFILES_DIR/.zshrc\"\n# <<< dotfiles >>>" >> "$ZSHRC"
-  fi
-  grep -qxF '[ -f ~/.devaliases ] && source ~/.devaliases' "$ZSHRC" || echo '[ -f ~/.devaliases ] && source ~/.devaliases' >> "$ZSHRC"
-elif [[ "$SHELL" =~ "bash" ]]; then
-  touch "$BASHRC"
-  ln -sf "$DOTFILES_DIR/.bashrc" "$BASHRC"
-  ln -sf "$DOTFILES_DIR/.bash_aliases" "$HOME/.bash_aliases"
-  grep -qxF '[ -f ~/.devaliases ] && source ~/.devaliases' "$BASHRC" || echo '[ -f ~/.devaliases ] && source ~/.devaliases' >> "$BASHRC"
-fi
-
-# --- Setup Starship ---
-mkdir -p "$HOME/.config/starship"
-ln -sf "$DOTFILES_DIR/.config/starship/starship.toml" "$HOME/.config/starship.toml"
-echo "✅ Linked Starship config"
-
-if ! command -v starship &> /dev/null; then
-  echo "⬇️  Installing Starship via Homebrew..."
-  brew install starship
-fi
-
-# --- Install devcontainer CLI if missing ---
-if ! command -v devcontainer &> /dev/null; then
-  echo "⬇️  Installing devcontainer CLI via Homebrew..."
-  brew install devcontainer
-fi
-
-# --- Download add-devcontainer.sh from GitHub lab repo ---
-mkdir -p "$BIN_DIR"
+# --- Download latest devcontainer helper ---
 curl -fsSL https://raw.githubusercontent.com/kfuras/lab/main/bash/add-devcontainer.sh -o "$BIN_DIR/add-devcontainer"
 chmod +x "$BIN_DIR/add-devcontainer"
-echo "✅ Downloaded add-devcontainer.sh to ~/bin"
+echo "✅ Downloaded and prepared add-devcontainer.sh in ~/bin"
 
-exec "$SHELL"
+# --- Add sourcing logic to shell config ---
+SHELL_RC="$HOME/.zshrc"
+if [[ "$SHELL" =~ "bash" ]]; then
+  SHELL_RC="$HOME/.bashrc"
+fi
+
+if ! grep -qF "[ -f ~/.devaliases ] && source ~/.devaliases" "$SHELL_RC"; then
+  echo "" >> "$SHELL_RC"
+  echo "[ -f ~/.devaliases ] && source ~/.devaliases" >> "$SHELL_RC"
+  echo "✅ Updated $SHELL_RC to source ~/.devaliases"
+fi
+
+# --- Install Starship if not installed ---
+if ! command -v starship &>/dev/null; then
+  echo "⬇️  Installing Starship via Homebrew..."
+  brew install starship
+else
+  echo "✅ Starship already installed"
+fi
+
+echo "🎉 Bootstrap complete. Restart your shell or run: source $SHELL_RC"
