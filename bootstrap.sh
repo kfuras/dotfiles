@@ -4,6 +4,11 @@ set -e
 
 DOTFILES_DIR="$HOME/code/dotfiles"
 BIN_DIR="$HOME/bin"
+CONFIG_DIR="$HOME/.config"
+GHOSTTY_CONFIG="$CONFIG_DIR/ghostty/config"
+STARSHIP_CONFIG="$CONFIG_DIR/starship.toml"
+BASHRC_LOCAL="$DOTFILES_DIR/.bashrc.local"
+ZSHRC_LOCAL="$DOTFILES_DIR/.zshrc.local"
 DEVALIASES="$HOME/.devaliases"
 
 echo "🔧 Setting up dotfiles environment..."
@@ -20,8 +25,8 @@ else
 fi
 
 # --- Link Starship config ---
-mkdir -p ~/.config
-ln -sf "$DOTFILES_DIR/.config/starship/starship.toml" ~/.config/starship.toml
+mkdir -p "$CONFIG_DIR"
+ln -sf "$DOTFILES_DIR/.config/starship/starship.toml" "$STARSHIP_CONFIG"
 echo "✅ Linked Starship config"
 
 # --- Install Ghostty if not installed ---
@@ -33,12 +38,12 @@ else
 fi
 
 # --- Link Ghostty config ---
-mkdir -p ~/.config/ghostty
-ln -sf "$DOTFILES_DIR/.config/ghostty/config" ~/.config/ghostty/config
+mkdir -p "$(dirname "$GHOSTTY_CONFIG")"
+ln -sf "$DOTFILES_DIR/.config/ghostty/config" "$GHOSTTY_CONFIG"
 echo "✅ Linked Ghostty config"
 
 # --- Write ~/.devaliases ---
-cat <<'EOF' > "$HOME/.devaliases"
+cat <<'EOF' > "$DEVALIASES"
 # ~/.devaliases
 
 # Create devcontainer by project type
@@ -56,14 +61,22 @@ devconnect() {
   docker exec -it "$container" bash
 }
 
-# Use Zsh inside container
+# Use shell inside container (zsh preferred, fallback to bash or sh)
 devshell() {
   container=$(docker ps --filter "name=$1" --format "{{.Names}}" | head -n 1)
   if [ -z "$container" ]; then
     echo "❌ No container found matching: $1"
     return 1
   fi
-  docker exec -it "$container" zsh
+
+  for shell in zsh bash sh; do
+    if docker exec "$container" which "$shell" &>/dev/null; then
+      docker exec -it "$container" "$shell"
+      return
+    fi
+  done
+
+  echo "❌ No compatible shell (zsh/bash/sh) found in container"
 }
 
 # Build/launch dev container in current folder
@@ -71,6 +84,7 @@ devbuild() {
   devcontainer up --workspace-folder "$PWD"
 }
 EOF
+
 echo "✅ Created ~/.devaliases with devcontainer helpers"
 
 # --- Download latest devcontainer helper ---
@@ -78,16 +92,24 @@ curl -fsSL https://raw.githubusercontent.com/kfuras/lab/main/bash/add-devcontain
 chmod +x "$BIN_DIR/add-devcontainer"
 echo "✅ Downloaded and prepared add-devcontainer.sh in ~/bin"
 
-# --- Add sourcing logic to shell config ---
-SHELL_RC="$HOME/.zshrc"
-if [[ "$SHELL" =~ "bash" ]]; then
-  SHELL_RC="$HOME/.bashrc"
-fi
+# --- Add local sourcing to shell config ---
+for shell_rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
+  shell_name=$(basename "$shell_rc")
+  local_file="$DOTFILES_DIR/.${shell_name}.local"
 
-if ! grep -qF "[ -f ~/.devaliases ] && source ~/.devaliases" "$SHELL_RC"; then
-  echo "" >> "$SHELL_RC"
-  echo "[ -f ~/.devaliases ] && source ~/.devaliases" >> "$SHELL_RC"
-  echo "✅ Updated $SHELL_RC to source ~/.devaliases"
-fi
+  if [ -f "$shell_rc" ]; then
+    if ! grep -qF "source \"$local_file\"" "$shell_rc"; then
+      echo "" >> "$shell_rc"
+      echo "# <<< dotfiles.local >>>" >> "$shell_rc"
+      echo "[ -f \"$local_file\" ] && source \"$local_file\"" >> "$shell_rc"
+      echo "# <<< dotfiles.local >>>" >> "$shell_rc"
+      echo "✅ Updated ~/${shell_name} to source .${shell_name}.local"
+    else
+      echo "✅ ~/${shell_name} already sources .${shell_name}.local"
+    fi
+  fi
 
-echo "🎉 Bootstrap complete. Restart your shell or run: source $SHELL_RC"
+done
+
+echo "🎉 Bootstrap complete. Restart your shell or run: source ~/.zshrc or ~/.bashrc"
+
