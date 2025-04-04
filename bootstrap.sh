@@ -41,6 +41,14 @@ mkdir -p "$HOME/.config/ghostty"
 ln -sf "$GHOSTTY_CONFIG" "$HOME/.config/ghostty/config"
 echo "✅ Linked Ghostty config"
 
+# --- Install Neovim if missing ---
+if ! command -v nvim &>/dev/null; then
+  echo "⬇️  Installing Neovim..."
+  brew install neovim
+else
+  echo "✅ Neovim already installed"
+fi
+
 # --- Link Neovim config ---
 mkdir -p ~/.config/nvim
 ln -sf "$DOTFILES_DIR/.config/nvim/init.vim" ~/.config/nvim/init.vim
