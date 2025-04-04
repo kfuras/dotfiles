@@ -11,6 +11,14 @@ echo "🔧 Setting up dotfiles environment..."
 # --- Ensure ~/bin exists ---
 mkdir -p "$BIN_DIR"
 
+# --- Install Starship if not installed ---
+if ! command -v starship &>/dev/null; then
+  echo "⬇️  Installing Starship via Homebrew..."
+  brew install starship
+else
+  echo "✅ Starship already installed"
+fi
+
 # --- Link Starship config ---
 mkdir -p ~/.config
 ln -sf "$DOTFILES_DIR/.config/starship/starship.toml" ~/.config/starship.toml
@@ -80,14 +88,6 @@ if ! grep -qF "[ -f ~/.devaliases ] && source ~/.devaliases" "$SHELL_RC"; then
   echo "" >> "$SHELL_RC"
   echo "[ -f ~/.devaliases ] && source ~/.devaliases" >> "$SHELL_RC"
   echo "✅ Updated $SHELL_RC to source ~/.devaliases"
-fi
-
-# --- Install Starship if not installed ---
-if ! command -v starship &>/dev/null; then
-  echo "⬇️  Installing Starship via Homebrew..."
-  brew install starship
-else
-  echo "✅ Starship already installed"
 fi
 
 echo "🎉 Bootstrap complete. Restart your shell or run: source $SHELL_RC"
