@@ -1,0 +1,5 @@
+# ~/.zshrc.local
+# Add custom zsh logic here
+
+# Starship prompt
+eval "$(starship init zsh)"

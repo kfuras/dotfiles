@@ -1,0 +1,5 @@
+# ~/.bashrc.local
+# Add custom bash logic here
+
+# Starship prompt
+eval "$(starship init bash)"
