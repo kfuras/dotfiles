@@ -6,7 +6,7 @@ set -e
 DOTFILES_DIR="$HOME/code/dotfiles"
 BIN_DIR="$HOME/bin"
 DEVALIASES="$HOME/.devaliases"
-STARSHIP_CONFIG="$DOTFILES_DIR/.config/starship/starship.toml"
+STARSHIP_CONFIG="$DOTFILES_DIR/.config/starship.toml"
 GHOSTTY_CONFIG="$DOTFILES_DIR/.config/ghostty/config"
 
 # --- Start Setup ---
@@ -40,6 +40,15 @@ fi
 mkdir -p "$HOME/.config/ghostty"
 ln -sf "$GHOSTTY_CONFIG" "$HOME/.config/ghostty/config"
 echo "✅ Linked Ghostty config"
+
+# --- Link Neovim config ---
+mkdir -p ~/.config/nvim
+ln -sf "$DOTFILES_DIR/.config/nvim/init.vim" ~/.config/nvim/init.vim
+echo "✅ Linked Neovim config"
+
+# --- Link Vim config ---
+ln -sf "$DOTFILES_DIR/.vimrc" ~/.vimrc
+echo "✅ Linked Vim config"
 
 # --- Create ~/.devaliases ---
 cat <<'EOF' > "$DEVALIASES"
