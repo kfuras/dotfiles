@@ -6,12 +6,11 @@ add_newline = true
 # Change the default prompt format
 format = """\
 [╭╴](bold green)$os$username$hostname$directory$git_branch$git_status
-$battery
 [╰─](bold green)$character\
 """
 
 [os]
-format = '[$symbol](bold white) '   
+format = '[$symbol](bold white) '
 disabled = false
 
 [os.symbols]
