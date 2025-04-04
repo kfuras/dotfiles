@@ -16,6 +16,19 @@ mkdir -p ~/.config
 ln -sf "$DOTFILES_DIR/.config/starship/starship.toml" ~/.config/starship.toml
 echo "✅ Linked Starship config"
 
+# --- Install Ghostty if not installed ---
+if ! command -v ghostty &>/dev/null; then
+  echo "⬇️  Installing Ghostty via Homebrew..."
+  brew install ghostty
+else
+  echo "✅ Ghostty already installed"
+fi
+
+# --- Link Ghostty config ---
+mkdir -p ~/.config/ghostty
+ln -sf "$DOTFILES_DIR/.config/ghostty/config" ~/.config/ghostty/config
+echo "✅ Linked Ghostty config"
+
 # --- Write ~/.devaliases ---
 cat <<'EOF' > "$HOME/.devaliases"
 # ~/.devaliases
