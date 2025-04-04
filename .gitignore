@@ -1,0 +1,23 @@
+# Don't track this symlinked file
+.devaliases
+
+# macOS / Editor artifacts
+.DS_Store
+*.swp
+*.swo
+*.swn
+*~
+
+# Ignore backups and logs
+*.bak
+*.tmp
+*.log
+
+# Ignore local/system-specific stuff
+.cache/
+.local/
+
+# Shell histories (optional)
+.bash_history
+.zsh_history
+
