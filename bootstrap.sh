@@ -95,7 +95,8 @@ echo "✅ Downloaded and prepared add-devcontainer.sh in ~/bin"
 # --- Add local sourcing to shell config ---
 for shell_rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
   shell_name=$(basename "$shell_rc")
-  local_file="$DOTFILES_DIR/.${shell_name}.local"
+  shell_type="${shell_name#.}"  # Remove leading dot
+  local_file="$DOTFILES_DIR/.${shell_type}.local"
 
   if [ -f "$shell_rc" ]; then
     if ! grep -qF "source \"$local_file\"" "$shell_rc"; then
@@ -103,13 +104,27 @@ for shell_rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
       echo "# <<< dotfiles.local >>>" >> "$shell_rc"
       echo "[ -f \"$local_file\" ] && source \"$local_file\"" >> "$shell_rc"
       echo "# <<< dotfiles.local >>>" >> "$shell_rc"
-      echo "✅ Updated ~/${shell_name} to source .${shell_name}.local"
+      echo "✅ Updated ~/${shell_name} to source .${shell_type}.local"
     else
-      echo "✅ ~/${shell_name} already sources .${shell_name}.local"
+      echo "✅ ~/${shell_name} already sources .${shell_type}.local"
     fi
   fi
-
 done
 
-echo "🎉 Bootstrap complete. Restart your shell or run: source ~/.zshrc or ~/.bashrc"
+# --- Finish message with correct shell source suggestion ---
+current_shell=$(basename "$SHELL")
+
+case "$current_shell" in
+  zsh)
+    shell_rc_file="~/.zshrc"
+    ;;
+  bash)
+    shell_rc_file="~/.bashrc"
+    ;;
+  *)
+    shell_rc_file="your shell config file (unknown shell: $current_shell)"
+    ;;
+esac
+
+echo "🎉 Bootstrap complete. Restart your shell or run: source $shell_rc_file"
 
